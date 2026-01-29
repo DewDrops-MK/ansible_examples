@@ -1,6 +1,6 @@
 ---
 - hosts: basehosts
-  become: yes
+  become: true
   serial: 1
   tasks:
   - name: suppress banner
@@ -20,6 +20,8 @@
       - python3-pip
       - python3-venv
       - python3-virtualenv
+      - software-properties-common
+      - sudo
       - tmux
       - vim
       cache_valid_time: 3600    # update cache if more than an hour old

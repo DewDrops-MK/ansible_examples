@@ -3,24 +3,31 @@
   hosts: k8s
   become: true
   tasks:
-    - name: add k8s key
-      apt_key:
-        url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
-        state: present
+    - name: install minikube
+      ansible.builtin.shell: |
+        curl -LO https://github.com/kubernetes/minikube/releases/latest/download/minikube-linux-amd64
+        install minikube-linux-amd64 /usr/local/bin/minikube
+        rm minikube-linux-amd64
 
-    - name: add k8s repo
-      apt_repository:
-        repo: deb http://apt.kubernetes.io/ kubernetes-xenial main
-        state: present
+- name: configure minikube
+  hosts: k8s
+  become_user: ubuntu
+  tasks:
+    - name: install minikube
+      shell: minikube start --force
 
-    - name: install k8s packages
-      apt:
-        name:
-        - kubelet
-        - kubeadm
-        - kubectl
-        update_cache: true
-        state: latest
+    - name: Pause for 90 seconds before starting again
+      pause:
+        seconds: 90
+    
+- name: pod status
+  hosts: k8s
+  become_user: ubuntu
+  tasks:
+    - name: pod status
+      shell: minikube kubectl -- get po -A
+      register: pod_status
 
-    - name: pull k8s images
-      shell: kubeadm config images pull
+    - name: print pod status
+      ansible.builtin.debug:
+        var: pod_status
